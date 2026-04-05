@@ -18,6 +18,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path ,include
 
+handler404 = 'config.error_handlers.handler404'
+handler500 = 'config.error_handlers.handler500'
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/auth/', include('apps.users.urls')),

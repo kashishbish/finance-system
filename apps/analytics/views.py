@@ -8,22 +8,25 @@ from django.db.models import Sum, Count
 from django.db.models.functions import TruncMonth
 from apps.transactions.models import Transaction
 from apps.transactions.serializers import TransactionSerializer
+from apps.users.permissions import IsAnalystOrAdmin 
 
 # Create your views here.
 class SummaryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if request.user.role == 'viewer':
-            return Response(
-                {'error': 'Viewers cannot access analytics'},
-                status=status.HTTP_403_FORBIDDEN
-            )
+
         base_qs = Transaction.objects.filter(
             user=request.user,
             is_deleted=False
         )
 
+        if request.user.role == 'viewer':
+            return Response(
+                {'error': 'Viewers cannot access analytics'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         total_income = base_qs.filter(
             transaction_type='income'
         ).aggregate(
@@ -51,7 +54,7 @@ class SummaryView(APIView):
         }, status=status.HTTP_200_OK)
     
 class CategoryBreakdownView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAnalystOrAdmin]
 
     def get(self, request):
         if request.user.role == 'viewer':
@@ -76,7 +79,7 @@ class CategoryBreakdownView(APIView):
         }, status=status.HTTP_200_OK)
     
 class MonthlyTotalsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAnalystOrAdmin]
 
     def get(self, request):
         if request.user.role == 'viewer':
