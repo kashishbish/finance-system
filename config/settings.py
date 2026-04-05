@@ -173,3 +173,6 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+# Tell Django where to find tests
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
