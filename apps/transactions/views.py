@@ -19,8 +19,42 @@ class TransactionListCreateView(APIView):
             is_deleted=False
         ).select_related('category')
 
+        # Read query parameters safely
+        transaction_type = request.query_params.get('type')
+        category_id      = request.query_params.get('category')
+        date_from        = request.query_params.get('date_from')
+        date_to          = request.query_params.get('date_to')
+        search           = request.query_params.get('search')
+
+        #apply filters
+        if transaction_type:
+            transactions = transactions.filter(
+                transaction_type=transaction_type)
+            
+        if category_id:
+            transactions = transactions.filter(
+                category__id=category_id
+            )
+         
+        if date_from:
+            transactions = transactions.filter(
+                date__gte=date_from
+            )
+
+        if date_to:
+            transactions = transactions.filter(
+                date__lte=date_to
+            )
+        
+        if search:
+            transactions = transactions.filter(
+                notes__icontains=search
+            )
+        
         serializer = TransactionSerializer(transactions, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({
+            'count':   transactions.count(),
+            'results': serializer.data }, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = TransactionSerializer(data=request.data)
